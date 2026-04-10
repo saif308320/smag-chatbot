@@ -1,0 +1,204 @@
+
+
+<!-- 1. SMAG Chatbot Styles -->
+<style>
+#smag-chat-bubble {
+  position: fixed; bottom: 28px; right: 28px;
+  z-index: 9999; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center;
+  animation: smagBubblePop 0.5s cubic-bezier(.36,1.6,.54,1) both;
+}
+@keyframes smagBubblePop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+#smag-chat-bubble .smag-bw {
+  background: #fff; border: 3px solid #c8102e;
+  border-radius: 16px 16px 16px 0; padding: 10px 18px;
+  box-shadow: 0 8px 32px rgba(200,16,46,0.25);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  transition: transform 0.2s;
+}
+#smag-chat-bubble .smag-bw:hover { transform: translateY(-4px) scale(1.03); }
+#smag-chat-bubble .smag-label {
+  font-family: sans-serif; font-weight: 700; font-size: 13px;
+  color: #c8102e; letter-spacing: 0.04em; text-transform: uppercase;
+}
+#smag-chat-bubble .smag-pill {
+  background: #c8102e; color: #fff; font-size: 11px; font-weight: 600;
+  border-radius: 20px; padding: 3px 12px; display: flex; align-items: center; gap: 5px;
+}
+#smag-chat-bubble .smag-odot {
+  width: 7px; height: 7px; background: #4ade80; border-radius: 50%;
+  animation: smagBlink 1.4s infinite;
+}
+@keyframes smagBlink { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+#smag-chat-window {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 360px; height: 520px; background: #fff;
+  border-radius: 18px; box-shadow: 0 16px 60px rgba(200,16,46,0.18), 0 2px 16px rgba(0,0,0,.1);
+  display: none; flex-direction: column; z-index: 9999;
+  overflow: hidden; border: 1.5px solid #f5c0c8;
+  font-family: sans-serif;
+}
+.smag-hdr { background: linear-gradient(135deg,#c8102e,#a00d25); padding: 14px 18px; display:flex; align-items:center; gap:12px; }
+.smag-hdr-av { width:42px;height:42px;background:#fff2f4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #fff;flex-shrink:0; }
+.smag-hdr-inf { flex:1; }
+.smag-hdr-name { font-weight:700;font-size:15px;color:#fff; }
+.smag-hdr-st { font-size:11px;color:#ffc0c8;display:flex;align-items:center;gap:4px;margin-top:2px; }
+.smag-hdr-st span { width:6px;height:6px;background:#4ade80;border-radius:50%; }
+.smag-hdr-cls { background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center; }
+
+.smag-msgs { flex:1;overflow-y:auto;padding:16px 14px;background:#fdf8f8;display:flex;flex-direction:column;gap:10px; }
+.smag-msgs::-webkit-scrollbar{width:4px} .smag-msgs::-webkit-scrollbar-thumb{background:#c8102e44;border-radius:4px}
+.smag-msg { display:flex;gap:8px;align-items:flex-end;max-width:88%; }
+.smag-msg.bot { align-self:flex-start; }
+.smag-msg.usr { align-self:flex-end;flex-direction:row-reverse; }
+.smag-av { width:28px;height:28px;background:#c8102e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0; }
+.smag-bbl { padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.55; }
+.smag-msg.bot .smag-bbl { background:#fff;color:#1a1a2e;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(200,16,46,.08);border:1px solid #f5c0c8; }
+.smag-msg.usr .smag-bbl { background:linear-gradient(135deg,#c8102e,#a00d25);color:#fff;border-bottom-right-radius:4px; }
+.smag-qrs { display:flex;flex-wrap:wrap;gap:6px;padding-left:36px; }
+.smag-qrc { background:#fff;border:1.5px solid #c8102e;color:#c8102e;font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s; }
+.smag-qrc:hover { background:#c8102e;color:#fff; }
+.smag-typ { display:flex;align-items:center;gap:8px; }
+.smag-tdots { background:#fff;border:1px solid #f5c0c8;border-radius:12px;padding:10px 14px;display:flex;gap:4px; }
+.smag-tdots span { width:7px;height:7px;background:#c8102e;border-radius:50%;animation:smagDot 1.2s infinite;opacity:.5; }
+.smag-tdots span:nth-child(2){animation-delay:.2s} .smag-tdots span:nth-child(3){animation-delay:.4s}
+@keyframes smagDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+.smag-ftr { padding:10px 12px;background:#fff;border-top:1px solid #f5c0c8;display:flex;align-items:flex-end;gap:8px; }
+.smag-ftr textarea { flex:1;border:1.5px solid #e8c0c8;border-radius:12px;padding:9px 13px;font-size:13.5px;resize:none;outline:none;min-height:40px;max-height:100px;overflow-y:auto;color:#1a1a2e;background:#fdf8f8;transition:border .2s; }
+.smag-ftr textarea:focus { border-color:#c8102e;background:#fff; }
+.smag-send { width:40px;height:40px;background:linear-gradient(135deg,#c8102e,#a00d25);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 3px 12px rgba(200,16,46,.35); }
+.smag-send:hover { transform:scale(1.08); }
+.smag-pw { text-align:center;font-size:10px;color:#bbb;padding:5px 0 6px;background:#fff; }
+.smag-pw a { color:#c8102e;text-decoration:none;font-weight:600; }
+</style>
+
+<!-- 2. SMAG Chatbot HTML -->
+<div id="smag-chat-bubble" onclick="smagOpen()">
+  <div class="smag-bw">
+    <div class="smag-label">💬 Let's Chat</div>
+    <div class="smag-pill"><span class="smag-odot"></span> Online</div>
+  </div>
+</div>
+
+<div id="smag-chat-window">
+  <div class="smag-hdr">
+    <div class="smag-hdr-av">🤖</div>
+    <div class="smag-hdr-inf">
+      <div class="smag-hdr-name">SMAG AI Assistant</div>
+      <div class="smag-hdr-st"><span></span> Online · Replies instantly</div>
+    </div>
+    <button class="smag-hdr-cls" onclick="smagClose()">✕</button>
+  </div>
+  <div class="smag-msgs" id="smag-msgs"></div>
+  <div class="smag-ftr">
+    <textarea id="smag-inp" placeholder="Type your message..." rows="1"
+      onkeydown="smagKey(event)" oninput="smagResize(this)"></textarea>
+    <button class="smag-send" onclick="smagSend()">➤</button>
+  </div>
+  <div class="smag-pw">Powered by <a href="https://smagtechnologies.com" target="_blank">SMAG Technologies</a></div>
+</div>
+
+<!-- 3. SMAG Chatbot Script -->
+<script>
+(function() {
+  // ⚠️ IMPORTANT: Vercel deploy ke baad yahan apna URL daalo
+  const SMAG_API = 'https://smag-custom-chatbot.vercel.app/api/chat';
+
+  let smagHistory = [];
+  let smagStarted = false;
+
+  window.smagOpen = function() {
+    document.getElementById('smag-chat-bubble').style.display = 'none';
+    const w = document.getElementById('smag-chat-window');
+    w.style.display = 'flex';
+    if (!smagStarted) { smagStarted = true; smagWelcome(); }
+  };
+
+  window.smagClose = function() {
+    document.getElementById('smag-chat-window').style.display = 'none';
+    document.getElementById('smag-chat-bubble').style.display = 'flex';
+  };
+
+  function smagWelcome() {
+    smagBot("👋 Hi! Welcome to **SMAG Technologies**! I'm your AI assistant. How can I help you today?");
+    setTimeout(() => smagChips(["🔍 SEO Services","💻 Web Dev","📱 Mobile App","📈 Digital Marketing","💰 Get a Quote","📞 Contact"]), 500);
+  }
+
+  window.smagSend = async function(txt) {
+    const inp = document.getElementById('smag-inp');
+    const text = txt || inp.value.trim();
+    if (!text) return;
+    if (!txt) { inp.value = ''; inp.style.height = 'auto'; }
+    smagUser(text);
+    smagHistory.push({ role: 'user', content: text });
+    const tid = smagTyping();
+    try {
+      const res = await fetch(SMAG_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: smagHistory })
+      });
+      const data = await res.json();
+      smagRmTyp(tid);
+      const reply = data.reply || "I'm having trouble right now. Please call 📞 832-592-1313!";
+      smagHistory.push({ role: 'assistant', content: reply });
+      smagBot(reply);
+    } catch(e) {
+      smagRmTyp(tid);
+      smagBot("Connection error. Please visit **smagtechnologies.com** or call 📞 832-592-1313!");
+    }
+  };
+
+  function smagUser(t) {
+    const d = document.createElement('div');
+    d.className = 'smag-msg usr';
+    d.innerHTML = `<div class="smag-bbl">${esc(t)}</div>`;
+    add(d);
+  }
+
+  function smagBot(t) {
+    const d = document.createElement('div');
+    d.className = 'smag-msg bot';
+    d.innerHTML = `<div class="smag-av">🤖</div><div class="smag-bbl">${md(t)}</div>`;
+    add(d);
+  }
+
+  function smagChips(opts) {
+    const d = document.createElement('div');
+    d.className = 'smag-qrs';
+    opts.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'smag-qrc'; b.textContent = o;
+      b.onclick = () => { d.remove(); smagSend(o); };
+      d.appendChild(b);
+    });
+    add(d);
+  }
+
+  function smagTyping() {
+    const id = 'st' + Date.now();
+    const d = document.createElement('div');
+    d.id = id; d.className = 'smag-typ';
+    d.innerHTML = `<div class="smag-av">🤖</div><div class="smag-tdots"><span></span><span></span><span></span></div>`;
+    add(d); return id;
+  }
+
+  function smagRmTyp(id) { const e = document.getElementById(id); if(e) e.remove(); }
+
+  function add(el) {
+    const c = document.getElementById('smag-msgs');
+    c.appendChild(el); c.scrollTop = c.scrollHeight;
+  }
+
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function md(s) { return s.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
+
+  window.smagKey = function(e) { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); smagSend(); } };
+  window.smagResize = function(el) { el.style.height='auto'; el.style.height = Math.min(el.scrollHeight,100)+'px'; };
+})();
+</script>
