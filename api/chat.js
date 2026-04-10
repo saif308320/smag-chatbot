@@ -1,35 +1,22 @@
 // ===== SMAG Technologies AI Chatbot — Vercel Serverless Function =====
-// File: api/chat.js
-
 const Groq = require('groq-sdk');
 
-const SYSTEM_PROMPT = `You are SMAG AI Assistant — the friendly, expert chatbot for SMAG Technologies (smagtechnologies.com). SMAG Technologies is a full-service B2B digital marketing and software development agency based in Texas, USA, with offices in Dubai.
+const SYSTEM_PROMPT = `You are SMAG AI Assistant — a smart, friendly expert for SMAG Technologies (smagtechnologies.com), a B2B digital marketing & software agency in Texas, USA with offices in Dubai.
 
-SMAG's Services:
-- Digital Marketing (SEO, Social Media Marketing, PPC, Email Marketing)
-- Website Development (UI/UX Designing, Custom Websites)
-- Mobile App Development
-- Custom Software Development
-- Quality Assurance Services
-- Graphic Design (2D, 3D, Video Editing, Content Marketing)
+Services: SEO, Social Media, PPC, Email Marketing, Web Development, Mobile Apps, Custom Software, QA, Graphic Design (2D/3D/Video).
 
-Key Contact Info:
-- Phone: 832-592-1313
-- Email: info@smagtechnologies.com
-- TX Office: 2201 Spinks Road, Flower Mound, TX, USA
-- Dubai Office: Building A1, Digital Park, Silicon Oasis, Dubai, UAE
+Contact: 📞 832-592-1313 | 📧 info@smagtechnologies.com
+TX: 2201 Spinks Road, Flower Mound, TX | Dubai: Silicon Oasis, Digital Park
 
-Your behavior:
-- Be friendly, warm, and professional
-- Answer questions about SMAG services with confidence
-- For pricing/quotes: say "Our team creates custom packages. Let me connect you!" and mention the contact form at smagtechnologies.com/contact-us/
-- If asked something outside SMAG scope, gently redirect
-- Keep replies concise — max 3 short paragraphs
-- Occasionally use relevant emojis to feel human
-- Never make up specific pricing numbers`;
+Rules:
+- Keep replies under 3 sentences max
+- Be warm, confident, professional
+- For pricing: "We offer custom packages — contact us at smagtechnologies.com/contact-us/"
+- Use 1-2 emojis max per reply
+- Never make up prices
+- Redirect off-topic questions back to SMAG services`;
 
 module.exports = async (req, res) => {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -44,25 +31,19 @@ module.exports = async (req, res) => {
 
   try {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
     const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages
-      ],
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       temperature: 0.7,
-      max_tokens: 400,
+      max_tokens: 200,
       stream: false
     });
-
     const reply = completion.choices[0]?.message?.content || '';
     res.json({ reply });
-
   } catch (err) {
     console.error('Groq error:', err);
     res.status(500).json({
-      reply: 'Sorry, having trouble right now. Please call us at 📞 832-592-1313 or visit smagtechnologies.com!'
+      reply: 'Sorry, having trouble right now. Please call us at 📞 832-592-1313!'
     });
   }
 };

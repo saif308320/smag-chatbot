@@ -1,7 +1,95 @@
-
-
-<!-- 1. SMAG Chatbot Styles -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMAG Chatbot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+:root {
+  --primary: #c8102e;
+  --primary-dark: #a00d25;
+  --bg: #ffffff;
+  --bg2: #fdf8f8;
+  --text: #1a1a2e;
+  --border: #f5c0c8;
+  --bubble-bg: #ffffff;
+  --header-text: #ffffff;
+  --user-bubble: linear-gradient(135deg,#c8102e,#a00d25);
+  --bot-bubble: #ffffff;
+  --shadow: rgba(200,16,46,0.18);
+  --input-bg: #fdf8f8;
+  --chip-border: #c8102e;
+  --chip-color: #c8102e;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Theme Switcher Button */
+#smag-theme-btn {
+  position: fixed;
+  bottom: 100px;
+  right: 28px;
+  z-index: 10000;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px var(--shadow);
+  transition: transform 0.2s;
+}
+#smag-theme-btn:hover { transform: scale(1.1); }
+
+/* Theme Panel */
+#smag-theme-panel {
+  position: fixed;
+  bottom: 155px;
+  right: 28px;
+  z-index: 10000;
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 14px;
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 220px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border: 1px solid var(--border);
+}
+#smag-theme-panel.open { display: flex; }
+.smag-theme-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+  position: relative;
+}
+.smag-theme-dot:hover { transform: scale(1.15); }
+.smag-theme-dot.active { border-color: #333; }
+.smag-theme-dot[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Chat Bubble */
 #smag-chat-bubble {
   position: fixed; bottom: 28px; right: 28px;
   z-index: 9999; cursor: pointer;
@@ -13,108 +101,282 @@
   to   { transform: scale(1); opacity: 1; }
 }
 #smag-chat-bubble .smag-bw {
-  background: #fff; border: 3px solid #c8102e;
-  border-radius: 16px 16px 16px 0; padding: 10px 18px;
-  box-shadow: 0 8px 32px rgba(200,16,46,0.25);
+  background: var(--bubble-bg);
+  border: 3px solid var(--primary);
+  border-radius: 16px 16px 16px 0;
+  padding: 10px 18px;
+  box-shadow: 0 8px 32px var(--shadow);
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   transition: transform 0.2s;
 }
 #smag-chat-bubble .smag-bw:hover { transform: translateY(-4px) scale(1.03); }
 #smag-chat-bubble .smag-label {
   font-family: sans-serif; font-weight: 700; font-size: 13px;
-  color: #c8102e; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--primary); letter-spacing: 0.04em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
 }
 #smag-chat-bubble .smag-pill {
-  background: #c8102e; color: #fff; font-size: 11px; font-weight: 600;
+  background: var(--primary); color: #fff; font-size: 11px; font-weight: 600;
   border-radius: 20px; padding: 3px 12px; display: flex; align-items: center; gap: 5px;
 }
-#smag-chat-bubble .smag-odot {
+.smag-odot {
   width: 7px; height: 7px; background: #4ade80; border-radius: 50%;
   animation: smagBlink 1.4s infinite;
 }
 @keyframes smagBlink { 0%,100%{opacity:1}50%{opacity:0.3} }
 
+/* Chat Window */
 #smag-chat-window {
   position: fixed; bottom: 28px; right: 28px;
-  width: 360px; height: 520px; background: #fff;
-  border-radius: 18px; box-shadow: 0 16px 60px rgba(200,16,46,0.18), 0 2px 16px rgba(0,0,0,.1);
+  width: 370px; height: 540px;
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 16px 60px var(--shadow), 0 2px 16px rgba(0,0,0,.1);
   display: none; flex-direction: column; z-index: 9999;
-  overflow: hidden; border: 1.5px solid #f5c0c8;
-  font-family: sans-serif;
+  overflow: hidden; border: 1.5px solid var(--border);
+  font-family: 'Segoe UI', sans-serif;
+  transition: background 0.3s;
 }
-.smag-hdr { background: linear-gradient(135deg,#c8102e,#a00d25); padding: 14px 18px; display:flex; align-items:center; gap:12px; }
-.smag-hdr-av { width:42px;height:42px;background:#fff2f4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid #fff;flex-shrink:0; }
-.smag-hdr-inf { flex:1; }
-.smag-hdr-name { font-weight:700;font-size:15px;color:#fff; }
-.smag-hdr-st { font-size:11px;color:#ffc0c8;display:flex;align-items:center;gap:4px;margin-top:2px; }
-.smag-hdr-st span { width:6px;height:6px;background:#4ade80;border-radius:50%; }
-.smag-hdr-cls { background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center; }
 
-.smag-msgs { flex:1;overflow-y:auto;padding:16px 14px;background:#fdf8f8;display:flex;flex-direction:column;gap:10px; }
-.smag-msgs::-webkit-scrollbar{width:4px} .smag-msgs::-webkit-scrollbar-thumb{background:#c8102e44;border-radius:4px}
-.smag-msg { display:flex;gap:8px;align-items:flex-end;max-width:88%; }
-.smag-msg.bot { align-self:flex-start; }
-.smag-msg.usr { align-self:flex-end;flex-direction:row-reverse; }
-.smag-av { width:28px;height:28px;background:#c8102e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0; }
-.smag-bbl { padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.55; }
-.smag-msg.bot .smag-bbl { background:#fff;color:#1a1a2e;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(200,16,46,.08);border:1px solid #f5c0c8; }
-.smag-msg.usr .smag-bbl { background:linear-gradient(135deg,#c8102e,#a00d25);color:#fff;border-bottom-right-radius:4px; }
-.smag-qrs { display:flex;flex-wrap:wrap;gap:6px;padding-left:36px; }
-.smag-qrc { background:#fff;border:1.5px solid #c8102e;color:#c8102e;font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s; }
-.smag-qrc:hover { background:#c8102e;color:#fff; }
-.smag-typ { display:flex;align-items:center;gap:8px; }
-.smag-tdots { background:#fff;border:1px solid #f5c0c8;border-radius:12px;padding:10px 14px;display:flex;gap:4px; }
-.smag-tdots span { width:7px;height:7px;background:#c8102e;border-radius:50%;animation:smagDot 1.2s infinite;opacity:.5; }
-.smag-tdots span:nth-child(2){animation-delay:.2s} .smag-tdots span:nth-child(3){animation-delay:.4s}
-@keyframes smagDot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+/* Header */
+.smag-hdr {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+.smag-hdr-av {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; border: 2px solid rgba(255,255,255,0.4);
+  flex-shrink: 0;
+}
+.smag-hdr-inf { flex: 1; }
+.smag-hdr-name { font-weight: 700; font-size: 15px; color: var(--header-text); }
+.smag-hdr-st {
+  font-size: 11px; color: rgba(255,255,255,0.75);
+  display: flex; align-items: center; gap: 4px; margin-top: 2px;
+}
+.smag-hdr-st span { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; }
+.smag-hdr-actions { display: flex; gap: 8px; }
+.smag-hdr-btn {
+  background: rgba(255,255,255,0.15); border: none; color: #fff;
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.smag-hdr-btn:hover { background: rgba(255,255,255,0.3); }
 
-.smag-ftr { padding:10px 12px;background:#fff;border-top:1px solid #f5c0c8;display:flex;align-items:flex-end;gap:8px; }
-.smag-ftr textarea { flex:1;border:1.5px solid #e8c0c8;border-radius:12px;padding:9px 13px;font-size:13.5px;resize:none;outline:none;min-height:40px;max-height:100px;overflow-y:auto;color:#1a1a2e;background:#fdf8f8;transition:border .2s; }
-.smag-ftr textarea:focus { border-color:#c8102e;background:#fff; }
-.smag-send { width:40px;height:40px;background:linear-gradient(135deg,#c8102e,#a00d25);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 3px 12px rgba(200,16,46,.35); }
-.smag-send:hover { transform:scale(1.08); }
-.smag-pw { text-align:center;font-size:10px;color:#bbb;padding:5px 0 6px;background:#fff; }
-.smag-pw a { color:#c8102e;text-decoration:none;font-weight:600; }
+/* Messages */
+.smag-msgs {
+  flex: 1; overflow-y: auto; padding: 16px 14px;
+  background: var(--bg2);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.smag-msgs::-webkit-scrollbar { width: 4px; }
+.smag-msgs::-webkit-scrollbar-thumb { background: var(--primary); opacity: 0.4; border-radius: 4px; }
+
+.smag-msg { display: flex; gap: 8px; align-items: flex-end; max-width: 88%; }
+.smag-msg.bot { align-self: flex-start; }
+.smag-msg.usr { align-self: flex-end; flex-direction: row-reverse; }
+.smag-av {
+  width: 28px; height: 28px; background: var(--primary);
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 13px; flex-shrink: 0; color: #fff;
+}
+.smag-bbl { padding: 10px 14px; border-radius: 16px; font-size: 13.5px; line-height: 1.55; }
+.smag-msg.bot .smag-bbl {
+  background: var(--bot-bubble); color: var(--text);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border: 1px solid var(--border);
+}
+.smag-msg.usr .smag-bbl {
+  background: var(--user-bubble); color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+/* Quick Chips */
+.smag-qrs { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 36px; }
+.smag-qrc {
+  background: var(--bg); border: 1.5px solid var(--chip-border);
+  color: var(--chip-color); font-size: 12px; font-weight: 500;
+  padding: 5px 12px; border-radius: 20px; cursor: pointer;
+  transition: all .2s; display: flex; align-items: center; gap: 5px;
+}
+.smag-qrc:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Typing */
+.smag-typ { display: flex; align-items: center; gap: 8px; }
+.smag-tdots {
+  background: var(--bot-bubble); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px; display: flex; gap: 4px;
+}
+.smag-tdots span {
+  width: 7px; height: 7px; background: var(--primary);
+  border-radius: 50%; animation: smagDot 1.2s infinite; opacity: .5;
+}
+.smag-tdots span:nth-child(2) { animation-delay: .2s; }
+.smag-tdots span:nth-child(3) { animation-delay: .4s; }
+@keyframes smagDot {
+  0%,60%,100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Footer */
+.smag-ftr {
+  padding: 10px 12px; background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: flex-end; gap: 8px;
+}
+.smag-ftr textarea {
+  flex: 1; border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 9px 13px;
+  font-size: 13.5px; resize: none; outline: none;
+  min-height: 40px; max-height: 100px; overflow-y: auto;
+  color: var(--text); background: var(--input-bg);
+  transition: border .2s;
+}
+.smag-ftr textarea:focus { border-color: var(--primary); background: var(--bg); }
+.smag-ftr textarea::placeholder { color: #aaa; }
+.smag-send {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: none; border-radius: 12px; color: #fff;
+  font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: transform .15s;
+  box-shadow: 0 3px 12px var(--shadow);
+}
+.smag-send:hover { transform: scale(1.08); }
+.smag-pw {
+  text-align: center; font-size: 10px; color: #bbb;
+  padding: 5px 0 6px; background: var(--bg);
+}
+.smag-pw a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+/* Timestamp */
+.smag-time { font-size: 10px; color: #aaa; padding: 0 4px; align-self: flex-end; }
 </style>
+</head>
+<body>
 
-<!-- 2. SMAG Chatbot HTML -->
+<!-- Theme Switcher -->
+<button id="smag-theme-btn" onclick="smagToggleThemePanel()" title="Change Theme">
+  <i class="fa-solid fa-palette"></i>
+</button>
+<div id="smag-theme-panel"></div>
+
+<!-- Chat Bubble -->
 <div id="smag-chat-bubble" onclick="smagOpen()">
   <div class="smag-bw">
-    <div class="smag-label">💬 Let's Chat</div>
-    <div class="smag-pill"><span class="smag-odot"></span> Online</div>
+    <div class="smag-label">
+      <i class="fa-solid fa-comment-dots"></i> Let's Chat
+    </div>
+    <div class="smag-pill">
+      <span class="smag-odot"></span> Online
+    </div>
   </div>
 </div>
 
+<!-- Chat Window -->
 <div id="smag-chat-window">
   <div class="smag-hdr">
-    <div class="smag-hdr-av">🤖</div>
+    <div class="smag-hdr-av">
+      <i class="fa-solid fa-robot"></i>
+    </div>
     <div class="smag-hdr-inf">
       <div class="smag-hdr-name">SMAG AI Assistant</div>
       <div class="smag-hdr-st"><span></span> Online · Replies instantly</div>
     </div>
-    <button class="smag-hdr-cls" onclick="smagClose()">✕</button>
+    <div class="smag-hdr-actions">
+      <button class="smag-hdr-btn" onclick="smagClearChat()" title="Clear Chat">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+      <button class="smag-hdr-btn" onclick="smagClose()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
   </div>
   <div class="smag-msgs" id="smag-msgs"></div>
   <div class="smag-ftr">
     <textarea id="smag-inp" placeholder="Type your message..." rows="1"
       onkeydown="smagKey(event)" oninput="smagResize(this)"></textarea>
-    <button class="smag-send" onclick="smagSend()">➤</button>
+    <button class="smag-send" onclick="smagSend()">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
   </div>
   <div class="smag-pw">Powered by <a href="https://smagtechnologies.com" target="_blank">SMAG Technologies</a></div>
 </div>
 
-<!-- 3. SMAG Chatbot Script -->
 <script>
 (function() {
-  // ⚠️ IMPORTANT: Vercel deploy ke baad yahan apna URL daalo
-const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
+  const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
+
+  // ===== 20 THEMES =====
+  const THEMES = [
+    { name: 'Red & White', color: '#c8102e', vars: { '--primary':'#c8102e','--primary-dark':'#a00d25','--bg':'#ffffff','--bg2':'#fdf8f8','--text':'#1a1a2e','--border':'#f5c0c8','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#fdf8f8','--shadow':'rgba(200,16,46,0.18)','--chip-border':'#c8102e','--chip-color':'#c8102e','--user-bubble':'linear-gradient(135deg,#c8102e,#a00d25)' }},
+    { name: 'Dark Mode', color: '#1a1a2e', vars: { '--primary':'#7c6aff','--primary-dark':'#5a48e0','--bg':'#1a1a2e','--bg2':'#12121f','--text':'#e0e0f0','--border':'#2e2e4e','--bubble-bg':'#252540','--bot-bubble':'#252540','--input-bg':'#12121f','--shadow':'rgba(124,106,255,0.2)','--chip-border':'#7c6aff','--chip-color':'#a090ff','--user-bubble':'linear-gradient(135deg,#7c6aff,#5a48e0)' }},
+    { name: 'Ocean Blue', color: '#0077b6', vars: { '--primary':'#0077b6','--primary-dark':'#005f8e','--bg':'#f0f8ff','--bg2':'#e3f4fd','--text':'#003459','--border':'#90caf9','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#e3f4fd','--shadow':'rgba(0,119,182,0.18)','--chip-border':'#0077b6','--chip-color':'#0077b6','--user-bubble':'linear-gradient(135deg,#0077b6,#005f8e)' }},
+    { name: 'Forest Green', color: '#2d6a4f', vars: { '--primary':'#2d6a4f','--primary-dark':'#1b4332','--bg':'#f0fff4','--bg2':'#d8f3dc','--text':'#1b4332','--border':'#95d5b2','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#d8f3dc','--shadow':'rgba(45,106,79,0.18)','--chip-border':'#2d6a4f','--chip-color':'#2d6a4f','--user-bubble':'linear-gradient(135deg,#2d6a4f,#1b4332)' }},
+    { name: 'Sunset Orange', color: '#e76f51', vars: { '--primary':'#e76f51','--primary-dark':'#c1440e','--bg':'#fff8f5','--bg2':'#fde8df','--text':'#3d1a00','--border':'#f4a98a','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#fde8df','--shadow':'rgba(231,111,81,0.18)','--chip-border':'#e76f51','--chip-color':'#e76f51','--user-bubble':'linear-gradient(135deg,#e76f51,#c1440e)' }},
+    { name: 'Purple Haze', color: '#7b2d8b', vars: { '--primary':'#7b2d8b','--primary-dark':'#5a1a68','--bg':'#fdf4ff','--bg2':'#f3e5f5','--text':'#2d003e','--border':'#ce93d8','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#f3e5f5','--shadow':'rgba(123,45,139,0.18)','--chip-border':'#7b2d8b','--chip-color':'#7b2d8b','--user-bubble':'linear-gradient(135deg,#7b2d8b,#5a1a68)' }},
+    { name: 'Midnight', color: '#0f0f23', vars: { '--primary':'#00d4ff','--primary-dark':'#00a8cc','--bg':'#0f0f23','--bg2':'#0a0a1a','--text':'#e0f7ff','--border':'#1a3a4a','--bubble-bg':'#1a1a35','--bot-bubble':'#1a1a35','--input-bg':'#0a0a1a','--shadow':'rgba(0,212,255,0.15)','--chip-border':'#00d4ff','--chip-color':'#00d4ff','--user-bubble':'linear-gradient(135deg,#00d4ff,#00a8cc)' }},
+    { name: 'Rose Gold', color: '#b76e79', vars: { '--primary':'#b76e79','--primary-dark':'#8e4a52','--bg':'#fff9f9','--bg2':'#fce4ec','--text':'#3e0010','--border':'#f48fb1','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#fce4ec','--shadow':'rgba(183,110,121,0.18)','--chip-border':'#b76e79','--chip-color':'#b76e79','--user-bubble':'linear-gradient(135deg,#b76e79,#8e4a52)' }},
+    { name: 'Teal Wave', color: '#00897b', vars: { '--primary':'#00897b','--primary-dark':'#00695c','--bg':'#f0fffe','--bg2':'#e0f2f1','--text':'#003d36','--border':'#80cbc4','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#e0f2f1','--shadow':'rgba(0,137,123,0.18)','--chip-border':'#00897b','--chip-color':'#00897b','--user-bubble':'linear-gradient(135deg,#00897b,#00695c)' }},
+    { name: 'Lemon Lime', color: '#7cb518', vars: { '--primary':'#7cb518','--primary-dark':'#5a8a00','--bg':'#fafff0','--bg2':'#f1ffe0','--text':'#1a2e00','--border':'#c5e1a5','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#f1ffe0','--shadow':'rgba(124,181,24,0.18)','--chip-border':'#7cb518','--chip-color':'#7cb518','--user-bubble':'linear-gradient(135deg,#7cb518,#5a8a00)' }},
+    { name: 'Indigo Night', color: '#3949ab', vars: { '--primary':'#3949ab','--primary-dark':'#283593','--bg':'#f5f5ff','--bg2':'#e8eaf6','--text':'#1a237e','--border':'#9fa8da','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#e8eaf6','--shadow':'rgba(57,73,171,0.18)','--chip-border':'#3949ab','--chip-color':'#3949ab','--user-bubble':'linear-gradient(135deg,#3949ab,#283593)' }},
+    { name: 'Amber Gold', color: '#ff8f00', vars: { '--primary':'#ff8f00','--primary-dark':'#e65100','--bg':'#fffdf0','--bg2':'#fff8e1','--text':'#3e2000','--border':'#ffcc80','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#fff8e1','--shadow':'rgba(255,143,0,0.18)','--chip-border':'#ff8f00','--chip-color':'#ff8f00','--user-bubble':'linear-gradient(135deg,#ff8f00,#e65100)' }},
+    { name: 'Slate Dark', color: '#455a64', vars: { '--primary':'#455a64','--primary-dark':'#263238','--bg':'#eceff1','--bg2':'#cfd8dc','--text':'#102027','--border':'#90a4ae','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#cfd8dc','--shadow':'rgba(69,90,100,0.18)','--chip-border':'#455a64','--chip-color':'#455a64','--user-bubble':'linear-gradient(135deg,#455a64,#263238)' }},
+    { name: 'Hot Pink', color: '#e91e8c', vars: { '--primary':'#e91e8c','--primary-dark':'#ad1457','--bg':'#fff0f8','--bg2':'#fce4ec','--text':'#3e0020','--border':'#f48fb1','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#fce4ec','--shadow':'rgba(233,30,140,0.18)','--chip-border':'#e91e8c','--chip-color':'#e91e8c','--user-bubble':'linear-gradient(135deg,#e91e8c,#ad1457)' }},
+    { name: 'Cyber Green', color: '#00ff88', vars: { '--primary':'#00c060','--primary-dark':'#009944','--bg':'#0d1117','--bg2':'#0a0e13','--text':'#00ff88','--border':'#003322','--bubble-bg':'#111a14','--bot-bubble':'#111a14','--input-bg':'#0a0e13','--shadow':'rgba(0,192,96,0.2)','--chip-border':'#00c060','--chip-color':'#00ff88','--user-bubble':'linear-gradient(135deg,#00c060,#009944)' }},
+    { name: 'Lavender', color: '#9c6ade', vars: { '--primary':'#9c6ade','--primary-dark':'#7c4abf','--bg':'#faf5ff','--bg2':'#ede7f6','--text':'#2e0060','--border':'#ce93d8','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#ede7f6','--shadow':'rgba(156,106,222,0.18)','--chip-border':'#9c6ade','--chip-color':'#9c6ade','--user-bubble':'linear-gradient(135deg,#9c6ade,#7c4abf)' }},
+    { name: 'Crimson Dark', color: '#8b0000', vars: { '--primary':'#c62828','--primary-dark':'#8b0000','--bg':'#1a0a0a','--bg2':'#120606','--text':'#ffcccc','--border':'#4a1010','--bubble-bg':'#2a1010','--bot-bubble':'#2a1010','--input-bg':'#120606','--shadow':'rgba(198,40,40,0.25)','--chip-border':'#c62828','--chip-color':'#ff8080','--user-bubble':'linear-gradient(135deg,#c62828,#8b0000)' }},
+    { name: 'Arctic Blue', color: '#4fc3f7', vars: { '--primary':'#0288d1','--primary-dark':'#01579b','--bg':'#f0faff','--bg2':'#e1f5fe','--text':'#01303f','--border':'#81d4fa','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#e1f5fe','--shadow':'rgba(2,136,209,0.18)','--chip-border':'#0288d1','--chip-color':'#0288d1','--user-bubble':'linear-gradient(135deg,#0288d1,#01579b)' }},
+    { name: 'Earthy Brown', color: '#795548', vars: { '--primary':'#795548','--primary-dark':'#4e342e','--bg':'#fdf6f0','--bg2':'#efebe9','--text':'#1a0a00','--border':'#bcaaa4','--bubble-bg':'#ffffff','--bot-bubble':'#ffffff','--input-bg':'#efebe9','--shadow':'rgba(121,85,72,0.18)','--chip-border':'#795548','--chip-color':'#795548','--user-bubble':'linear-gradient(135deg,#795548,#4e342e)' }},
+    { name: 'Neon Purple', color: '#aa00ff', vars: { '--primary':'#aa00ff','--primary-dark':'#7200ca','--bg':'#0d001a','--bg2':'#0a0012','--text':'#e8b4ff','--border':'#3a0060','--bubble-bg':'#1a0030','--bot-bubble':'#1a0030','--input-bg':'#0a0012','--shadow':'rgba(170,0,255,0.2)','--chip-border':'#aa00ff','--chip-color':'#cc66ff','--user-bubble':'linear-gradient(135deg,#aa00ff,#7200ca)' }},
+  ];
+
+  let currentTheme = 0;
   let smagHistory = [];
   let smagStarted = false;
+
+  // Build theme dots
+  const panel = document.getElementById('smag-theme-panel');
+  THEMES.forEach((t, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'smag-theme-dot' + (i === 0 ? ' active' : '');
+    dot.style.background = t.color;
+    dot.title = t.name;
+    dot.onclick = () => applyTheme(i);
+    panel.appendChild(dot);
+  });
+
+  function applyTheme(idx) {
+    currentTheme = idx;
+    const t = THEMES[idx];
+    const root = document.documentElement;
+    Object.entries(t.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    document.querySelectorAll('.smag-theme-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+    localStorage.setItem('smag-theme', idx);
+  }
+
+  // Load saved theme
+  const saved = localStorage.getItem('smag-theme');
+  applyTheme(saved !== null ? parseInt(saved) : 0);
+
+  window.smagToggleThemePanel = function() {
+    panel.classList.toggle('open');
+  };
 
   window.smagOpen = function() {
     document.getElementById('smag-chat-bubble').style.display = 'none';
     const w = document.getElementById('smag-chat-window');
     w.style.display = 'flex';
+    panel.classList.remove('open');
     if (!smagStarted) { smagStarted = true; smagWelcome(); }
   };
 
@@ -123,9 +385,24 @@ const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
     document.getElementById('smag-chat-bubble').style.display = 'flex';
   };
 
+  window.smagClearChat = function() {
+    document.getElementById('smag-msgs').innerHTML = '';
+    smagHistory = [];
+    smagStarted = false;
+    smagWelcome();
+  };
+
   function smagWelcome() {
+    smagStarted = true;
     smagBot("👋 Hi! Welcome to **SMAG Technologies**! I'm your AI assistant. How can I help you today?");
-    setTimeout(() => smagChips(["🔍 SEO Services","💻 Web Dev","📱 Mobile App","📈 Digital Marketing","💰 Get a Quote","📞 Contact"]), 500);
+    setTimeout(() => smagChips([
+      { icon: 'fa-magnifying-glass', label: 'SEO Services' },
+      { icon: 'fa-code', label: 'Web Dev' },
+      { icon: 'fa-mobile-screen', label: 'Mobile App' },
+      { icon: 'fa-chart-line', label: 'Digital Marketing' },
+      { icon: 'fa-tag', label: 'Get a Quote' },
+      { icon: 'fa-phone', label: 'Contact' },
+    ]), 500);
   }
 
   window.smagSend = async function(txt) {
@@ -154,16 +431,18 @@ const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
   };
 
   function smagUser(t) {
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     const d = document.createElement('div');
     d.className = 'smag-msg usr';
-    d.innerHTML = `<div class="smag-bbl">${esc(t)}</div>`;
+    d.innerHTML = `<span class="smag-time">${now}</span><div class="smag-bbl">${esc(t)}</div>`;
     add(d);
   }
 
   function smagBot(t) {
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
     const d = document.createElement('div');
     d.className = 'smag-msg bot';
-    d.innerHTML = `<div class="smag-av">🤖</div><div class="smag-bbl">${md(t)}</div>`;
+    d.innerHTML = `<div class="smag-av"><i class="fa-solid fa-robot"></i></div><div class="smag-bbl">${md(t)}</div><span class="smag-time">${now}</span>`;
     add(d);
   }
 
@@ -172,8 +451,9 @@ const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
     d.className = 'smag-qrs';
     opts.forEach(o => {
       const b = document.createElement('button');
-      b.className = 'smag-qrc'; b.textContent = o;
-      b.onclick = () => { d.remove(); smagSend(o); };
+      b.className = 'smag-qrc';
+      b.innerHTML = `<i class="fa-solid ${o.icon}"></i> ${o.label}`;
+      b.onclick = () => { d.remove(); smagSend(o.label); };
       d.appendChild(b);
     });
     add(d);
@@ -183,7 +463,7 @@ const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
     const id = 'st' + Date.now();
     const d = document.createElement('div');
     d.id = id; d.className = 'smag-typ';
-    d.innerHTML = `<div class="smag-av">🤖</div><div class="smag-tdots"><span></span><span></span><span></span></div>`;
+    d.innerHTML = `<div class="smag-av"><i class="fa-solid fa-robot"></i></div><div class="smag-tdots"><span></span><span></span><span></span></div>`;
     add(d); return id;
   }
 
@@ -199,5 +479,14 @@ const SMAG_API = 'https://smag-chatbot.vercel.app/api/chat';
 
   window.smagKey = function(e) { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); smagSend(); } };
   window.smagResize = function(el) { el.style.height='auto'; el.style.height = Math.min(el.scrollHeight,100)+'px'; };
+
+  // Close theme panel on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#smag-theme-panel') && !e.target.closest('#smag-theme-btn')) {
+      panel.classList.remove('open');
+    }
+  });
 })();
 </script>
+</body>
+</html>
